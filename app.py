@@ -25,14 +25,13 @@ def submit():
     'first_name' : request.form.get('first_name'),
     'last_dot_num' : request.form.get('last_dot_num'),
     'event' : request.form.get('event'),
-    'qr_data' : request.form.get('qr_data')
+    'qr_data' : request.form.get('qr_data'),
     'timestamp': datetime.now()
     }
     
 #Store data in memory
 attendance_data.append(attendance_record)
-#FOR NOW,
-return render_template('success.html', record=attendance_record)
+#return render_template('success.html', record=attendance_record)
 
 @app.route('/view_data')
 def view_data():
