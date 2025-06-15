@@ -171,7 +171,7 @@
                 <div class="stat-label">Unique Events</div>
             </div>
             <div class="stat-card">
-                <div class="stat-number">{{ records|map(attribute='first_name')|unique|list|length + records|map(attribute='last_name')|unique|list|length }}</div>
+                <div class="stat-number">{{ records|map(attribute='first_name')|unique|list|length }}</div>
                 <div class="stat-label">Unique Students</div>
             </div>
         </div>
@@ -183,7 +183,7 @@
                 <a href="/" class="btn btn-secondary">🏠 Back to Home</a>
             </div>
         </div>
-        
+
         {% if records %}
         <div class="table-container">
             <table id="attendanceTable">
@@ -191,4 +191,58 @@
                     <tr>
                         <th>Name</th>
                         <th>Student ID</th>
-                        <th
+                        <th>Event</th>
+                        <th>Timestamp</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for record in records %}
+                    <tr>
+                        <td>{{ record.first_name }} {{ record.last_dot_num or record.last_name or '' }}</td>
+                        <td>{{ record.student_id or 'N/A' }}</td>
+                        <td>{{ record.event }}</td>
+                        <td>{{ record.timestamp }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-state-icon">📭</div>
+            <p>No attendance records yet. Scan a QR code to submit!</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <script>
+        // Search/filter logic
+        const searchBox = document.getElementById('searchBox');
+        searchBox.addEventListener('input', function() {
+            const searchValue = this.value.toLowerCase();
+            const rows = document.querySelectorAll('#attendanceTable tbody tr');
+            rows.forEach(row => {
+                const rowText = row.innerText.toLowerCase();
+                row.style.display = rowText.includes(searchValue) ? '' : 'none';
+            });
+        });
+
+        // Export table data as CSV
+        function exportData() {
+            let csv = 'Name,Student ID,Event,Timestamp\n';
+            const rows = document.querySelectorAll('#attendanceTable tbody tr');
+            rows.forEach(row => {
+                const cols = row.querySelectorAll('td');
+                const rowData = Array.from(cols).map(td => `"${td.innerText.trim()}"`).join(',');
+                csv += rowData + '\n';
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'attendance_data.csv';
+            link.click();
+        }
+    </script>
+</body>
+</html>

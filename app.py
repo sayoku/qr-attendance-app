@@ -12,18 +12,18 @@ attendance_data = []
 
 @app.route('/')
 def home():
-    """Admin page to generate QR code for events"""
+    #Admin page to generate QR code for events
     return render_template('admin.html')
 
 @app.route('/generate_qr', methods=['POST'])
 def generate_qr():
-    """Generate QR code for a specific event"""
+    #Generate QR code for a specific event
     event_name = request.form.get('event_name')
     
-    # Create the URL that the QR code will point to
+    #Create the URL that the QR code will point to
     form_url = request.url_root + f'form?event={event_name}'
     
-    # Generate QR code
+    #Generate QR code
     qr = qrcode.QRCode(
         version=1,
         error_correction=qrcode.constants.ERROR_CORRECT_L,
@@ -33,10 +33,10 @@ def generate_qr():
     qr.add_data(form_url)
     qr.make(fit=True)
     
-    # Create QR code image
+    #Create QR code image
     img = qr.make_image(fill_color="black", back_color="white")
     
-    # Convert to base64 for display
+    #Convert to base64 for display
     buffer = io.BytesIO()
     img.save(buffer, format='PNG')
     buffer.seek(0)
@@ -60,18 +60,18 @@ def submit():
     'first_name' : request.form.get('first_name'),
     'last_dot_num' : request.form.get('last_dot_num'),
     'event' : request.form.get('event'),
-    'qr_data' : request.form.get('qr_data'),
+    #'qr_data' : request.form.get('qr_data'),
     'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     }
     
-#Store data in memory
-attendance_data.append(attendance_record)
-return render_template('success.html', record=attendance_record)
+    #Store data in memory
+    attendance_data.append(attendance_record)
+    return render_template('success.html', record=attendance_record)
 
 @app.route('/view_data')
 def view_data():
     #View data for testing
-    return render_template('data.html', record=attendance_record)
+    return render_template('data.html', records=attendance_data)
 
 @app.route('/api/attendance', methods=['GET'])
 def get_attendance_data():
