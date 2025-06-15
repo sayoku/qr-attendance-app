@@ -3,106 +3,132 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Attendance Submitted</title>
+    <title>Attendance Submitted Successfully</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            max-width: 600px;
-            margin: 0 auto;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
             padding: 20px;
-            background-color: #f5f5f5;
-            text-align: center;
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         
         .container {
             background: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
         }
         
         .success-icon {
-            font-size: 4em;
-            color: #28a745;
+            font-size: 4rem;
             margin-bottom: 20px;
         }
         
         h1 {
-            color: #28a745;
+            color: #2d3748;
             margin-bottom: 20px;
+            font-size: 2rem;
+            font-weight: 300;
+        }
+        
+        .success-message {
+            color: #38a169;
+            font-size: 1.2rem;
+            margin-bottom: 30px;
         }
         
         .record-details {
-            background: #f8f9fa;
+            background: #f7fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
             padding: 20px;
-            border-radius: 5px;
-            margin: 20px 0;
+            margin-bottom: 30px;
             text-align: left;
         }
         
-        .detail-row {
-            margin: 10px 0;
-            padding: 5px 0;
-            border-bottom: 1px solid #eee;
+        .record-details h3 {
+            margin-top: 0;
+            color: #2d3748;
         }
         
-        .detail-label {
-            font-weight: bold;
-            color: #555;
+        .record-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding: 8px 0;
+            border-bottom: 1px solid #e2e8f0;
         }
         
-        button {
-            background: #007bff;
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            font-size: 16px;
-            border-radius: 5px;
-            cursor: pointer;
-            margin: 10px;
+        .record-item:last-child {
+            border-bottom: none;
         }
         
-        button:hover {
-            background: #0056b3;
+        .record-label {
+            font-weight: 600;
+            color: #4a5568;
         }
         
-        .green-button {
-            background: #28a745;
+        .record-value {
+            color: #2d3748;
         }
         
-        .green-button:hover {
-            background: #218838;
+        .close-message {
+            color: #718096;
+            font-size: 14px;
+            margin-top: 20px;
+            font-style: italic;
+        }
+        
+        @media (max-width: 600px) {
+            .container {
+                padding: 30px 20px;
+            }
+            
+            .record-item {
+                flex-direction: column;
+                gap: 5px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="success-icon">✅</div>
-        <h1>Attendance Submitted Successfully!</h1>
-        
-        <p>Thank you! Your attendance has been recorded.</p>
+        <h1>Attendance Recorded!</h1>
+        <div class="success-message">Your attendance has been successfully submitted.</div>
         
         <div class="record-details">
-            <h3>Attendance Details:</h3>
-            <div class="detail-row">
-                <span class="detail-label">Time:</span> {{ record.timestamp }}
+            <h3>📋 Submission Details:</h3>
+            <div class="record-item">
+                <span class="record-label">Name:</span>
+                <span class="record-value">{{ record.first_name }} {{ record.last_name }}</span>
             </div>
-            <div class="detail-row">
-                <span class="detail-label">Name:</span> {{ record.student_name }}
-            </div>
-            <div class="detail-row">
-                <span class="detail-label">Student ID:</span> {{ record.student_id }}
-            </div>
-            <div class="detail-row">
-                <span class="detail-label">Event:</span> {{ record.event_name }}
-            </div>
-            {% if record.qr_data %}
-            <div class="detail-row">
-                <span class="detail-label">QR Code:</span> {{ record.qr_data }}
+            {% if record.student_id %}
+            <div class="record-item">
+                <span class="record-label">Student ID:</span>
+                <span class="record-value">{{ record.student_id }}</span>
             </div>
             {% endif %}
+            <div class="record-item">
+                <span class="record-label">Event:</span>
+                <span class="record-value">{{ record.event }}</span>
+            </div>
+            <div class="record-item">
+                <span class="record-label">Time:</span>
+                <span class="record-value">{{ record.timestamp }}</span>
+            </div>
         </div>
         
+        <div class="close-message">
+            You can now close this window or tab.
+        </div>
     </div>
 </body>
 </html>
