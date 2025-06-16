@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Attendance Data</title>
+    <title>QR Code - {{ event_name }}</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -11,238 +11,154 @@
             padding: 20px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            color: #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         
         .container {
             background: white;
-            padding: 30px;
+            padding: 40px;
             border-radius: 15px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            max-width: 1200px;
-            margin: 0 auto;
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
         }
         
         h1 {
             color: #4a5568;
-            text-align: center;
-            margin-bottom: 30px;
-            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-size: 2rem;
             font-weight: 300;
         }
         
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
+        .event-name {
+            color: #667eea;
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 30px;
+            padding: 10px;
+            background: #f7fafc;
+            border-radius: 8px;
+        }
+        
+        .qr-container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
             margin-bottom: 30px;
         }
         
-        .stat-card {
+        .qr-code {
+            max-width: 100%;
+            height: auto;
+        }
+        
+        .instructions {
             background: #f7fafc;
             border: 1px solid #e2e8f0;
             border-radius: 8px;
             padding: 20px;
-            text-align: center;
-        }
-        
-        .stat-number {
-            font-size: 2rem;
-            font-weight: bold;
-            color: #667eea;
-        }
-        
-        .stat-label {
-            color: #718096;
-            font-size: 14px;
-            text-transform: uppercase;
-        }
-        
-        .controls {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
             margin-bottom: 20px;
-            flex-wrap: wrap;
-            gap: 15px;
+            text-align: left;
         }
         
-        .btn {
+        .instructions h3 {
+            margin-top: 0;
+            color: #2d3748;
+        }
+        
+        .instructions p {
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
+        
+        .url-display {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 12px;
+            word-break: break-all;
+            margin-bottom: 20px;
+        }
+        
+        .buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        button, .btn {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
-            padding: 10px 20px;
+            padding: 12px 25px;
+            font-size: 16px;
             border-radius: 8px;
             cursor: pointer;
             text-decoration: none;
             display: inline-block;
-            transition: transform 0.2s ease;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
         
-        .btn:hover {
+        button:hover, .btn:hover {
             transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
         }
         
         .btn-secondary {
             background: #718096;
         }
         
-        .search-box {
-            padding: 10px;
-            border: 2px solid #e2e8f0;
-            border-radius: 8px;
-            font-size: 16px;
-            width: 300px;
-            max-width: 100%;
+        .btn-secondary:hover {
+            box-shadow: 0 8px 25px rgba(113, 128, 150, 0.3);
         }
         
-        .table-container {
-            overflow-x: auto;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-        
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            background: white;
-        }
-        
-        th, td {
-            padding: 15px;
-            text-align: left;
-            border-bottom: 1px solid #e2e8f0;
-        }
-        
-        th {
-            background: #f7fafc;
-            font-weight: 600;
-            color: #2d3748;
-            position: sticky;
-            top: 0;
-        }
-        
-        tr:hover {
-            background: #f7fafc;
-        }
-        
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            color: #718096;
-        }
-        
-        .empty-state-icon {
-            font-size: 4rem;
-            margin-bottom: 20px;
-        }
-        
-        @media (max-width: 768px) {
-            .controls {
-                flex-direction: column;
-                align-items: stretch;
+        @media print {
+            body {
+                background: white;
             }
-            
-            .search-box {
-                width: 100%;
+            .container {
+                box-shadow: none;
+                border: 2px solid #000;
             }
-            
-            table {
-                font-size: 14px;
-            }
-            
-            th, td {
-                padding: 10px 8px;
+            .buttons {
+                display: none;
             }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>📊 Attendance Data</h1>
+        <h1>📱 QR Code Generated</h1>
+        <div class="event-name">{{ event_name }}</div>
         
-        <div class="stats">
-            <div class="stat-card">
-                <div class="stat-number">{{ records|length }}</div>
-                <div class="stat-label">Total Submissions</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number">{{ records|map(attribute='event')|unique|list|length }}</div>
-                <div class="stat-label">Unique Events</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number">{{ records|map(attribute='first_name')|unique|list|length }}</div>
-                <div class="stat-label">Unique Students</div>
-            </div>
+        <div class="qr-container">
+            <img src="data:image/png;base64,{{ qr_image }}" alt="QR Code" class="qr-code">
         </div>
         
-        <div class="controls">
-            <input type="text" class="search-box" id="searchBox" placeholder="Search by name, event, or student ID...">
-            <div>
-                <button class="btn" onclick="exportData()">📁 Export CSV</button>
-                <a href="/" class="btn btn-secondary">🏠 Back to Home</a>
-            </div>
+        <div class="instructions">
+            <h3>📋 Instructions for Students:</h3>
+            <p><strong>1.</strong> Open your phone's camera app</p>
+            <p><strong>2.</strong> Point the camera at this QR code</p>
+            <p><strong>3.</strong> Tap the notification/link that appears</p>
+            <p><strong>4.</strong> Fill out the attendance form</p>
         </div>
-
-        {% if records %}
-        <div class="table-container">
-            <table id="attendanceTable">
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Student ID</th>
-                        <th>Event</th>
-                        <th>Timestamp</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for record in records %}
-                    <tr>
-                        <td>{{ record.first_name }} {{ record.last_dot_num or record.last_name or '' }}</td>
-                        <td>{{ record.student_id or 'N/A' }}</td>
-                        <td>{{ record.event }}</td>
-                        <td>{{ record.timestamp }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+        
+        <div class="url-display">
+            Direct Link: {{ form_url }}
         </div>
-        {% else %}
-        <div class="empty-state">
-            <div class="empty-state-icon">📭</div>
-            <p>No attendance records yet. Scan a QR code to submit!</p>
+        
+        <div class="buttons">
+            <button onclick="window.print()">🖨️ Print QR Code</button>
+            <a href="/" class="btn btn-secondary">🔄 Generate New QR</a>
+            <a href="/view_data" class="btn">📊 View Data</a>
         </div>
-        {% endif %}
     </div>
-
-    <script>
-        // Search/filter logic
-        const searchBox = document.getElementById('searchBox');
-        searchBox.addEventListener('input', function() {
-            const searchValue = this.value.toLowerCase();
-            const rows = document.querySelectorAll('#attendanceTable tbody tr');
-            rows.forEach(row => {
-                const rowText = row.innerText.toLowerCase();
-                row.style.display = rowText.includes(searchValue) ? '' : 'none';
-            });
-        });
-
-        // Export table data as CSV
-        function exportData() {
-            let csv = 'Name,Student ID,Event,Timestamp\n';
-            const rows = document.querySelectorAll('#attendanceTable tbody tr');
-            rows.forEach(row => {
-                const cols = row.querySelectorAll('td');
-                const rowData = Array.from(cols).map(td => `"${td.innerText.trim()}"`).join(',');
-                csv += rowData + '\n';
-            });
-
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = 'attendance_data.csv';
-            link.click();
-        }
-    </script>
 </body>
 </html>
