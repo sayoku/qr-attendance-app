@@ -9,7 +9,7 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
             padding: 20px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #b93237 0%, #7c393b 100%);
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -19,7 +19,7 @@
         .container {
             background: white;
             padding: 40px;
-            border-radius: 15px;
+            border-radius: 10px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.2);
             text-align: center;
             max-width: 500px;
@@ -34,7 +34,7 @@
         }
         
         .event-name {
-            color: #667eea;
+            color: #b93237;
             font-size: 1.5rem;
             font-weight: 600;
             margin-bottom: 30px;
@@ -56,30 +56,11 @@
             height: auto;
         }
         
-        .instructions {
-            background: #f7fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 20px;
-            text-align: left;
-        }
-        
-        .instructions h3 {
-            margin-top: 0;
-            color: #2d3748;
-        }
-        
-        .instructions p {
-            margin-bottom: 10px;
-            line-height: 1.6;
-        }
-        
         .url-display {
             background: #2d3748;
             color: #e2e8f0;
             padding: 15px;
-            border-radius: 8px;
+            border-radius: 4px;
             font-family: monospace;
             font-size: 12px;
             word-break: break-all;
@@ -99,7 +80,7 @@
             border: none;
             padding: 12px 25px;
             font-size: 16px;
-            border-radius: 8px;
+            border-radius: 4px;
             cursor: pointer;
             text-decoration: none;
             display: inline-block;
@@ -142,22 +123,14 @@
             <img src="data:image/png;base64,{{ qr_image }}" alt="QR Code" class="qr-code">
         </div>
         
-        <div class="instructions">
-            <h3>📋 Instructions for Students:</h3>
-            <p><strong>1.</strong> Open your phone's camera app</p>
-            <p><strong>2.</strong> Point the camera at this QR code</p>
-            <p><strong>3.</strong> Tap the notification/link that appears</p>
-            <p><strong>4.</strong> Fill out the attendance form</p>
-        </div>
-        
         <div class="url-display">
             Direct Link: {{ form_url }}
         </div>
         
         <div class="buttons">
-            <button onclick="window.print()">🖨️ Print QR Code</button>
-            <a href="/" class="btn btn-secondary">🔄 Generate New QR</a>
-            <a href="/view_data" class="btn">📊 View Data</a>
+            <button onclick="window.print()">Print QR Code</button>
+            <a href="/" class="btn btn-secondary">Generate New QR</a>
+            <a href="/view_data" class="btn">View Data</a>
         </div>
     </div>
 </body>

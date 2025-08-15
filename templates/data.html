@@ -9,7 +9,7 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
             padding: 20px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #b93237 0%, #7c393b 100%);
             min-height: 100vh;
             color: #333;
         }
@@ -17,7 +17,7 @@
         .container {
             background: white;
             padding: 30px;
-            border-radius: 15px;
+            border-radius: 10px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.2);
             max-width: 1200px;
             margin: 0 auto;
@@ -41,7 +41,7 @@
         .stat-card {
             background: #f7fafc;
             border: 1px solid #e2e8f0;
-            border-radius: 8px;
+            border-radius: 4px;
             padding: 20px;
             text-align: center;
         }
@@ -68,11 +68,11 @@
         }
         
         .btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #b93237 0%, #7c393b 100%);
             color: white;
             border: none;
             padding: 10px 20px;
-            border-radius: 8px;
+            border-radius: 4px;
             cursor: pointer;
             text-decoration: none;
             display: inline-block;
@@ -90,7 +90,7 @@
         .search-box {
             padding: 10px;
             border: 2px solid #e2e8f0;
-            border-radius: 8px;
+            border-radius: 4px;
             font-size: 16px;
             width: 300px;
             max-width: 100%;
@@ -159,7 +159,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>📊 Attendance Data</h1>
+        <h1>Attendance Data</h1>
         
         <div class="stats">
             <div class="stat-card">
@@ -179,8 +179,8 @@
         <div class="controls">
             <input type="text" class="search-box" id="searchBox" placeholder="Search by name, event, or student ID...">
             <div>
-                <button class="btn" onclick="exportData()">📁 Export CSV</button>
-                <a href="/" class="btn btn-secondary">🏠 Back to Home</a>
+                <button class="btn" onclick="exportData()">Export CSV</button>
+                <a href="/" class="btn btn-secondary">Back to Home</a>
             </div>
         </div>
 
@@ -190,7 +190,7 @@
                 <thead>
                     <tr>
                         <th>Name</th>
-                        <th>Student ID</th>
+                        <th>Name.#</th>
                         <th>Event</th>
                         <th>Timestamp</th>
                     </tr>
@@ -198,7 +198,7 @@
                 <tbody>
                     {% for record in records %}
                     <tr>
-                        <td>{{ record.first_name }} {{ record.last_dot_num or record.last_name or '' }}</td>
+                        <td>{{ record.first_name }} {{ record.last_name or '' }}</td>
                         <td>{{ record.student_id or 'N/A' }}</td>
                         <td>{{ record.event }}</td>
                         <td>{{ record.timestamp }}</td>

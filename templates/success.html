@@ -19,7 +19,7 @@
         .container {
             background: white;
             padding: 40px;
-            border-radius: 15px;
+            border-radius: 10px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.2);
             text-align: center;
             max-width: 500px;
@@ -47,7 +47,7 @@
         .record-details {
             background: #f7fafc;
             border: 1px solid #e2e8f0;
-            border-radius: 8px;
+            border-radius: 4px;
             padding: 20px;
             margin-bottom: 30px;
             text-align: left;
@@ -100,19 +100,18 @@
 </head>
 <body>
     <div class="container">
-        <div class="success-icon">✅</div>
-        <h1>Attendance Recorded!</h1>
+        <h1>Thank you!</h1>
         <div class="success-message">Your attendance has been successfully submitted.</div>
         
         <div class="record-details">
-            <h3>📋 Submission Details:</h3>
+            <h3>Submission Details:</h3>
             <div class="record-item">
                 <span class="record-label">Name:</span>
                 <span class="record-value">{{ record.first_name }} {{ record.last_name }}</span>
             </div>
             {% if record.student_id %}
             <div class="record-item">
-                <span class="record-label">Student ID:</span>
+                <span class="record-label">Name.#:</span>
                 <span class="record-value">{{ record.student_id }}</span>
             </div>
             {% endif %}

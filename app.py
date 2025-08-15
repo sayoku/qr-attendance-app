@@ -58,7 +58,8 @@ def submit():
     #Handle form submission
     attendance_record = {
     'first_name' : request.form.get('first_name'),
-    'last_dot_num' : request.form.get('last_dot_num'),
+    'last_name' : request.form.get('last_name'),
+    'student_id' : request.form.get('student_id'),
     'event' : request.form.get('event'),
     #'qr_data' : request.form.get('qr_data'),
     'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
