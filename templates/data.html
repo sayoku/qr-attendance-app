@@ -13,7 +13,7 @@
             min-height: 100vh;
             color: #333;
         }
-        
+
         .container {
             background: white;
             padding: 30px;
@@ -22,7 +22,7 @@
             max-width: 1200px;
             margin: 0 auto;
         }
-        
+
         h1 {
             color: #4a5568;
             text-align: center;
@@ -30,14 +30,14 @@
             font-size: 2.5rem;
             font-weight: 300;
         }
-        
+
         .stats {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 20px;
             margin-bottom: 30px;
         }
-        
+
         .stat-card {
             background: #f7fafc;
             border: 1px solid #e2e8f0;
@@ -45,19 +45,19 @@
             padding: 20px;
             text-align: center;
         }
-        
+
         .stat-number {
             font-size: 2rem;
             font-weight: bold;
             color: #667eea;
         }
-        
+
         .stat-label {
             color: #718096;
             font-size: 14px;
             text-transform: uppercase;
         }
-        
+
         .controls {
             display: flex;
             justify-content: space-between;
@@ -66,7 +66,7 @@
             flex-wrap: wrap;
             gap: 15px;
         }
-        
+
         .btn {
             background: linear-gradient(135deg, #b93237 0%, #7c393b 100%);
             color: white;
@@ -78,15 +78,15 @@
             display: inline-block;
             transition: transform 0.2s ease;
         }
-        
+
         .btn:hover {
             transform: translateY(-2px);
         }
-        
+
         .btn-secondary {
             background: #718096;
         }
-        
+
         .search-box {
             padding: 10px;
             border: 2px solid #e2e8f0;
@@ -95,25 +95,26 @@
             width: 300px;
             max-width: 100%;
         }
-        
+
         .table-container {
             overflow-x: auto;
             border-radius: 8px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
         }
-        
+
         table {
             width: 100%;
             border-collapse: collapse;
             background: white;
         }
-        
+
         th, td {
             padding: 15px;
             text-align: left;
             border-bottom: 1px solid #e2e8f0;
         }
-        
+
         th {
             background: #f7fafc;
             font-weight: 600;
@@ -121,36 +122,36 @@
             position: sticky;
             top: 0;
         }
-        
+
         tr:hover {
             background: #f7fafc;
         }
-        
+
         .empty-state {
             text-align: center;
             padding: 60px 20px;
             color: #718096;
         }
-        
+
         .empty-state-icon {
             font-size: 4rem;
             margin-bottom: 20px;
         }
-        
+
         @media (max-width: 768px) {
             .controls {
                 flex-direction: column;
                 align-items: stretch;
             }
-            
+
             .search-box {
                 width: 100%;
             }
-            
+
             table {
                 font-size: 14px;
             }
-            
+
             th, td {
                 padding: 10px 8px;
             }
@@ -160,7 +161,7 @@
 <body>
     <div class="container">
         <h1>Attendance Data</h1>
-        
+
         <div class="stats">
             <div class="stat-card">
                 <div class="stat-number">{{ records|length }}</div>
@@ -175,7 +176,7 @@
                 <div class="stat-label">Unique Students</div>
             </div>
         </div>
-        
+
         <div class="controls">
             <input type="text" class="search-box" id="searchBox" placeholder="Search by name, event, or student ID...">
             <div>
@@ -190,8 +191,9 @@
                 <thead>
                     <tr>
                         <th>Name</th>
-                        <th>Name.#</th>
+                        <th>Student ID</th>
                         <th>Event</th>
+                        <th>QR Code</th>
                         <th>Timestamp</th>
                     </tr>
                 </thead>
@@ -201,6 +203,13 @@
                         <td>{{ record.first_name }} {{ record.last_name or '' }}</td>
                         <td>{{ record.student_id or 'N/A' }}</td>
                         <td>{{ record.event }}</td>
+                        <td>
+                            {% if qr_codes[record.event] %}
+                            <button class="btn" onclick="viewQR('{{ record.event }}')">View QR Code</button>
+                            {% else %}
+                            N/A
+                            {% endif %}
+                        </td>
                         <td>{{ record.timestamp }}</td>
                     </tr>
                     {% endfor %}
@@ -209,13 +218,27 @@
         </div>
         {% else %}
         <div class="empty-state">
-            <div class="empty-state-icon">📭</div>
+            <div class="empty-state-icon"></div>
             <p>No attendance records yet. Scan a QR code to submit!</p>
         </div>
         {% endif %}
     </div>
 
     <script>
+        const qrData = {
+            {% for event, qr in qr_codes.items() %}
+            "{{ event }}": "data:image/png;base64,{{ qr }}",
+            {% endfor %}
+        };
+
+        function viewQR(eventName) {
+            const dataUrl = qrData[eventName];
+            if (!dataUrl) return;
+            const win = window.open();
+            win.document.write(`<title>${eventName} QR Code</title>`);
+            win.document.write(`<img src="${dataUrl}" style="width:300px;height:300px;display:block;margin:auto;margin-top:50px;">`);
+        }
+
         // Search/filter logic
         const searchBox = document.getElementById('searchBox');
         searchBox.addEventListener('input', function() {
@@ -232,8 +255,9 @@
             let csv = 'Name,Student ID,Event,Timestamp\n';
             const rows = document.querySelectorAll('#attendanceTable tbody tr');
             rows.forEach(row => {
+                if(row.style.display === 'none') return;
                 const cols = row.querySelectorAll('td');
-                const rowData = Array.from(cols).map(td => `"${td.innerText.trim()}"`).join(',');
+                const rowData = Array.from(cols).slice(0,4).map(td => `"${td.innerText.trim()}"`).join(',');
                 csv += rowData + '\n';
             });
 
