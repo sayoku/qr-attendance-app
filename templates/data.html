@@ -205,7 +205,10 @@
                         <td>{{ record.event }}</td>
                         <td>
                             {% if qr_codes[record.event] %}
-                            <button class="btn" onclick="viewQR('{{ record.event }}')">View QR Code</button>
+                            <form method="POST" action="/generate_qr" style="display: inline;">
+                                <input type="hidden" name="event_name" value="{{ record.event }}">
+                                <button type="submit" class="btn">View QR</button>
+                            </form>
                             {% else %}
                             N/A
                             {% endif %}
@@ -225,19 +228,6 @@
     </div>
 
     <script>
-        const qrData = {
-            {% for event, qr in qr_codes.items() %}
-            "{{ event }}": "data:image/png;base64,{{ qr }}",
-            {% endfor %}
-        };
-
-        function viewQR(eventName) {
-            const dataUrl = qrData[eventName];
-            if (!dataUrl) return;
-            const win = window.open();
-            win.document.write(`<title>${eventName} QR Code</title>`);
-            win.document.write(`<img src="${dataUrl}" style="width:300px;height:300px;display:block;margin:auto;margin-top:50px;">`);
-        }
 
         // Search/filter logic
         const searchBox = document.getElementById('searchBox');
