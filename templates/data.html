@@ -19,7 +19,7 @@
             padding: 30px;
             border-radius: 10px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
         }
 
@@ -67,6 +67,11 @@
             gap: 15px;
         }
 
+        .view-toggle {
+            display: flex;
+            gap: 10px;
+        }
+
         .btn {
             background: linear-gradient(135deg, #b93237 0%, #7c393b 100%);
             color: white;
@@ -85,6 +90,61 @@
 
         .btn-secondary {
             background: #718096;
+        }
+
+        .btn-active {
+            background: #667eea;
+        }
+
+        .btn-qr {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            display: inline-block;
+        }
+
+        .btn-qr:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .dues-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .dues-btn.grey {
+            background: #9ca3af;
+            color: white;
+            cursor: not-allowed;
+        }
+
+        .dues-btn.red {
+            background: #ef4444;
+            color: white;
+            cursor: pointer;
+        }
+
+        .dues-btn.red:hover {
+            background: #dc2626;
+        }
+
+        .dues-btn.green {
+            background: #10b981;
+            color: white;
+            cursor: pointer;
+        }
+
+        .dues-btn.green:hover {
+            background: #059669;
         }
 
         .search-box {
@@ -138,6 +198,22 @@
             margin-bottom: 20px;
         }
 
+        .student-summary-table {
+            display: none;
+        }
+
+        .student-summary-table.active {
+            display: block;
+        }
+
+        .attendance-table.active {
+            display: block;
+        }
+
+        .attendance-table {
+            display: none;
+        }
+
         @media (max-width: 768px) {
             .controls {
                 flex-direction: column;
@@ -180,14 +256,36 @@
         <div class="controls">
             <input type="text" class="search-box" id="searchBox" placeholder="Search by name, event, or student ID...">
             <div>
+                <div class="view-toggle">
+                    <button class="btn btn-active" id="studentViewBtn" onclick="showStudentView()">Treasurer Summary</button>
+                    <button class="btn btn-secondary" id="attendanceViewBtn" onclick="showAttendanceView()">All Records</button>
+                </div>
                 <button class="btn" onclick="exportData()">Export CSV</button>
                 <a href="/" class="btn btn-secondary">Back to Home</a>
             </div>
         </div>
 
         {% if records %}
-        <div class="table-container">
-            <table id="attendanceTable">
+        <!-- Student Summary Table -->
+        <div class="table-container student-summary-table active" id="studentSummaryTable">
+            <table id="studentTable">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Student ID</th>
+                        <th>Total Attendances</th>
+                        <th>Dues Status</th>
+                    </tr>
+                </thead>
+                <tbody id="studentTableBody">
+                    <!-- Will be populated by JavaScript -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- All Attendance Records Table -->
+        <div class="table-container attendance-table" id="attendanceTable">
+            <table id="allRecordsTable">
                 <thead>
                     <tr>
                         <th>Name</th>
@@ -207,7 +305,7 @@
                             {% if qr_codes[record.event] %}
                             <form method="POST" action="/generate_qr" style="display: inline;">
                                 <input type="hidden" name="event_name" value="{{ record.event }}">
-                                <button type="submit" class="btn">View QR</button>
+                                <button type="submit" class="btn-qr">View QR Page</button>
                             </form>
                             {% else %}
                             N/A
@@ -228,13 +326,135 @@
     </div>
 
     <script>
+        // Store attendance data from Flask
+        const attendanceRecords = [
+            {% for record in records %}
+            {
+                firstName: "{{ record.first_name }}",
+                lastName: "{{ record.last_name or '' }}",
+                studentId: "{{ record.student_id or 'N/A' }}",
+                event: "{{ record.event }}",
+                timestamp: "{{ record.timestamp }}"
+            }{% if not loop.last %},{% endif %}
+            {% endfor %}
+        ];
+
+        // Store dues status in memory (would typically be in database)
+        let duesStatus = {};
+
+        function calculateStudentSummary() {
+            const studentMap = {};
+            
+            attendanceRecords.forEach(record => {
+                const key = `${record.firstName} ${record.lastName}`.trim();
+                const studentId = record.studentId;
+                
+                if (!studentMap[key]) {
+                    studentMap[key] = {
+                        name: key,
+                        studentId: studentId,
+                        totalAttendances: 0,
+                        eventsList: []
+                    };
+                }
+                
+                studentMap[key].totalAttendances += 1;
+                studentMap[key].eventsList.push(record.event);
+            });
+
+            return Object.values(studentMap).map(student => ({
+                ...student,
+                eventCount: student.totalAttendances
+            }));
+        }
+
+        function getDuesButtonClass(eventCount, studentKey) {
+            if (duesStatus[studentKey] === 'paid') return 'green';
+            if (eventCount < 8) return 'grey';
+            return 'red';
+        }
+
+        function getDuesButtonText(eventCount, studentKey) {
+            if (duesStatus[studentKey] === 'paid') return 'Paid ✓';
+            if (eventCount < 8) return `Need ${8 - eventCount} more`;
+            return 'Pay Dues';
+        }
+
+        function toggleDuesStatus(studentKey, eventCount) {
+            if (eventCount < 8) return; // Can't pay if under 8 events
+            
+            if (duesStatus[studentKey] === 'paid') {
+                duesStatus[studentKey] = 'unpaid';
+            } else {
+                duesStatus[studentKey] = 'paid';
+            }
+            
+            populateStudentTable();
+        }
+
+        function populateStudentTable() {
+            const students = calculateStudentSummary();
+            const tbody = document.getElementById('studentTableBody');
+            tbody.innerHTML = '';
+
+            students.forEach(student => {
+                const studentKey = `${student.name}_${student.studentId}`;
+                const row = document.createElement('tr');
+                
+                const duesClass = getDuesButtonClass(student.eventCount, studentKey);
+                const duesText = getDuesButtonText(student.eventCount, studentKey);
+                const clickable = student.eventCount >= 8;
+                
+                row.innerHTML = `
+                    <td>${student.name}</td>
+                    <td>${student.studentId}</td>
+                    <td>${student.eventCount}</td>
+                    <td>
+                        <button class="dues-btn ${duesClass}" 
+                                ${clickable ? `onclick="toggleDuesStatus('${studentKey}', ${student.eventCount})"` : ''}
+                                ${!clickable ? 'disabled' : ''}>
+                            ${duesText}
+                        </button>
+                    </td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+        }
+
+        function showStudentView() {
+            document.getElementById('studentSummaryTable').classList.add('active');
+            document.getElementById('attendanceTable').classList.remove('active');
+            document.getElementById('studentViewBtn').classList.add('btn-active');
+            document.getElementById('studentViewBtn').classList.remove('btn-secondary');
+            document.getElementById('attendanceViewBtn').classList.add('btn-secondary');
+            document.getElementById('attendanceViewBtn').classList.remove('btn-active');
+        }
+
+        function showAttendanceView() {
+            document.getElementById('studentSummaryTable').classList.remove('active');
+            document.getElementById('attendanceTable').classList.add('active');
+            document.getElementById('attendanceViewBtn').classList.add('btn-active');
+            document.getElementById('attendanceViewBtn').classList.remove('btn-secondary');
+            document.getElementById('studentViewBtn').classList.add('btn-secondary');
+            document.getElementById('studentViewBtn').classList.remove('btn-active');
+        }
 
         // Search/filter logic
         const searchBox = document.getElementById('searchBox');
         searchBox.addEventListener('input', function() {
             const searchValue = this.value.toLowerCase();
-            const rows = document.querySelectorAll('#attendanceTable tbody tr');
-            rows.forEach(row => {
+            
+            // Search student summary table
+            const studentRows = document.querySelectorAll('#studentTable tbody tr');
+            studentRows.forEach(row => {
+                const rowText = row.innerText.toLowerCase();
+                row.style.display = rowText.includes(searchValue) ? '' : 'none';
+            });
+            
+            // Search attendance records table
+            const attendanceRows = document.querySelectorAll('#allRecordsTable tbody tr');
+            attendanceRows.forEach(row => {
                 const rowText = row.innerText.toLowerCase();
                 row.style.display = rowText.includes(searchValue) ? '' : 'none';
             });
@@ -242,21 +462,46 @@
 
         // Export table data as CSV
         function exportData() {
-            let csv = 'Name,Student ID,Event,Timestamp\n';
-            const rows = document.querySelectorAll('#attendanceTable tbody tr');
-            rows.forEach(row => {
-                if(row.style.display === 'none') return;
-                const cols = row.querySelectorAll('td');
-                const rowData = Array.from(cols).slice(0,4).map(td => `"${td.innerText.trim()}"`).join(',');
-                csv += rowData + '\n';
-            });
+            const isStudentView = document.getElementById('studentSummaryTable').classList.contains('active');
+            let csv, rows;
+            
+            if (isStudentView) {
+                csv = 'Name,Student ID,Total Attendances,Dues Status\n';
+                rows = document.querySelectorAll('#studentTable tbody tr');
+                rows.forEach(row => {
+                    if(row.style.display === 'none') return;
+                    const cols = row.querySelectorAll('td');
+                    const duesStatus = cols[3].querySelector('button').textContent;
+                    const rowData = [
+                        `"${cols[0].innerText.trim()}"`,
+                        `"${cols[1].innerText.trim()}"`,
+                        `"${cols[2].innerText.trim()}"`,
+                        `"${duesStatus.trim()}"`
+                    ].join(',');
+                    csv += rowData + '\n';
+                });
+            } else {
+                csv = 'Name,Student ID,Event,Timestamp\n';
+                rows = document.querySelectorAll('#allRecordsTable tbody tr');
+                rows.forEach(row => {
+                    if(row.style.display === 'none') return;
+                    const cols = row.querySelectorAll('td');
+                    const rowData = Array.from(cols).slice(0,4).map(td => `"${td.innerText.trim()}"`).join(',');
+                    csv += rowData + '\n';
+                });
+            }
 
             const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
-            link.download = 'attendance_data.csv';
+            link.download = isStudentView ? 'student_summary.csv' : 'attendance_data.csv';
             link.click();
         }
+
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', function() {
+            populateStudentTable();
+        });
     </script>
 </body>
 </html>
