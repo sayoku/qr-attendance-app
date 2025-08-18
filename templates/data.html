@@ -67,6 +67,13 @@
             gap: 15px;
         }
 
+        .controls-right {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
         .view-toggle {
             display: flex;
             gap: 10px;
@@ -214,7 +221,9 @@
             display: none;
         }
 
-        @media (max-width: 768px) {
+        .btn-cancel {
+            background: #718096;
+        }
             .controls {
                 flex-direction: column;
                 align-items: stretch;
@@ -255,12 +264,12 @@
 
         <div class="controls">
             <input type="text" class="search-box" id="searchBox" placeholder="Search by name, event, or student ID...">
-            <div>
+            <div class="controls-right">
                 <div class="view-toggle">
-                    <button class="btn btn-active" id="studentViewBtn" onclick="showStudentView()">Treasurer Summary</button>
+                    <button class="btn btn-active" id="studentViewBtn" onclick="showStudentView()">Student Summary</button>
                     <button class="btn btn-secondary" id="attendanceViewBtn" onclick="showAttendanceView()">All Records</button>
                 </div>
-                <button class="btn" onclick="exportData()">Export CSV</button>
+                <button class="btn" onclick="exportToExcel()">Export to Excel</button>
                 <a href="/" class="btn btn-secondary">Back to Home</a>
             </div>
         </div>
@@ -460,7 +469,72 @@
             });
         });
 
-        // Export table data as CSV
+        // Excel Export Function
+        function exportToExcel() {
+            const isStudentView = document.getElementById('studentSummaryTable').classList.contains('active');
+            let data, filename;
+            
+            if (isStudentView) {
+                // Export student summary data
+                const students = calculateStudentSummary();
+                data = [
+                    ['Name', 'Student ID', 'Total Attendances', 'Dues Status'],
+                    ...students.map(student => {
+                        const studentKey = `${student.name}_${student.studentId}`;
+                        const duesText = getDuesButtonText(student.eventCount, studentKey);
+                        return [
+                            student.name,
+                            student.studentId,
+                            student.eventCount,
+                            duesText
+                        ];
+                    })
+                ];
+                filename = 'student_summary.xlsx';
+            } else {
+                // Export all attendance records
+                data = [
+                    ['Name', 'Student ID', 'Event', 'Timestamp'],
+                    ...attendanceRecords.map(record => [
+                        `${record.firstName} ${record.lastName}`.trim(),
+                        record.studentId,
+                        record.event,
+                        record.timestamp
+                    ])
+                ];
+                filename = 'attendance_records.xlsx';
+            }
+
+            // Send data to Flask backend for Excel export
+            fetch('/export_to_excel', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    data: data,
+                    filename: filename
+                })
+            })
+            .then(response => response.blob())
+            .then(blob => {
+                // Create download link
+                const url = window.URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = filename;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                window.URL.revokeObjectURL(url);
+            })
+            .catch(error => {
+                console.error('Export error:', error);
+                alert('Export failed. Please try again.');
+            });
+        }
+
+        // Export table data as CSV (backup function)
         function exportData() {
             const isStudentView = document.getElementById('studentSummaryTable').classList.contains('active');
             let csv, rows;
