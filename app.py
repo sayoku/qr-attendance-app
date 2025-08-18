@@ -65,6 +65,7 @@ def submit():
         'last_name': request.form.get('last_name'),
         'student_id': request.form.get('student_id'),
         'event': request.form.get('event'),
+        'feedback': request.form.get('feedback'),
         'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     }
     attendance_data.append(record)

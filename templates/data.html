@@ -266,7 +266,7 @@
             <input type="text" class="search-box" id="searchBox" placeholder="Search by name, event, or student ID...">
             <div class="controls-right">
                 <div class="view-toggle">
-                    <button class="btn btn-active" id="studentViewBtn" onclick="showStudentView()">Student Summary</button>
+                    <button class="btn btn-active" id="studentViewBtn" onclick="showStudentView()">Dues Summary</button>
                     <button class="btn btn-secondary" id="attendanceViewBtn" onclick="showAttendanceView()">All Records</button>
                 </div>
                 <button class="btn" onclick="exportToExcel()">Export to Excel</button>
@@ -302,6 +302,7 @@
                         <th>Event</th>
                         <th>QR Code</th>
                         <th>Timestamp</th>
+                        <th>Feedback</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -321,6 +322,7 @@
                             {% endif %}
                         </td>
                         <td>{{ record.timestamp }}</td>
+                        <td>{{ record.feedback }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -343,7 +345,8 @@
                 lastName: "{{ record.last_name or '' }}",
                 studentId: "{{ record.student_id or 'N/A' }}",
                 event: "{{ record.event }}",
-                timestamp: "{{ record.timestamp }}"
+                timestamp: "{{ record.timestamp }}",
+                feedback: "{{record.feedback}}"
             }{% if not loop.last %},{% endif %}
             {% endfor %}
         ];
@@ -494,12 +497,13 @@
             } else {
                 // Export all attendance records
                 data = [
-                    ['Name', 'Student ID', 'Event', 'Timestamp'],
+                    ['Name', 'Student ID', 'Event', 'Timestamp', 'Feedback'],
                     ...attendanceRecords.map(record => [
                         `${record.firstName} ${record.lastName}`.trim(),
                         record.studentId,
                         record.event,
-                        record.timestamp
+                        record.timestamp,
+                        record.feedback
                     ])
                 ];
                 filename = 'attendance_records.xlsx';
