@@ -1,11 +1,13 @@
-from flask import Flask, render_template, request, jsonify, send_file
+from flask import Flask, render_template, request, jsonify, send_file, session, redirect, url_for, flash
 from datetime import datetime
+from functools import wraps
 import pandas as pd
 import qrcode
 import io
 import base64
 
 app = Flask(__name__)
+app.secret_key = 'dancesport_at_osu_secretary_2025_2026' 
 
 # Store attendance in memory
 attendance_data = []
@@ -13,12 +15,54 @@ attendance_data = []
 # Store QR codes for events
 qr_codes = {}
 
+# Simple user credentials — in production need to change to use a database and hash passwords 
+ADMIN_CREDENTIALS = {
+    'dancesport': 'secretary2526', 
+    #'teacher': 'teacher123' - example login
+}
+
+def login_required(f):
+    """Decorator to require login for protected routes"""
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'logged_in' not in session:
+            flash('Please log in to access this page.')
+            return redirect(url_for('login'))
+        return f(*args, **kwargs)
+    return decorated_function
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    """Login page"""
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+        
+        if username in ADMIN_CREDENTIALS and ADMIN_CREDENTIALS[username] == password:
+            session['logged_in'] = True
+            session['username'] = username
+            flash(f'Welcome, {username}!')
+            return redirect(url_for('home'))
+        else:
+            flash('Invalid username or password.')
+    
+    return render_template('login.html')
+
+@app.route('/logout')
+def logout():
+    """Logout and clear session"""
+    session.clear()
+    flash('You have been logged out.')
+    return redirect(url_for('login'))
+
 @app.route('/')
+@login_required
 def home():
     """Admin page to generate QR codes for events"""
     return render_template('admin.html')
 
 @app.route('/generate_qr', methods=['POST'])
+@login_required
 def generate_qr():
     """Generate QR code for a specific event"""
     event_name = request.form.get('event_name')
@@ -53,13 +97,13 @@ def generate_qr():
 
 @app.route('/form')
 def attendance_form():
-    """Show attendance form after scanning QR"""
+    """Show attendance form after scanning QR (no login required)"""
     event = request.args.get('event', '')
     return render_template('form.html', event=event)
 
 @app.route('/submit', methods=['POST'])
 def submit():
-    """Handle attendance form submission"""
+    """Handle attendance form submission (no login required)"""
     record = {
         'first_name': request.form.get('first_name'),
         'last_name': request.form.get('last_name'),
@@ -72,6 +116,7 @@ def submit():
     return render_template('success.html', record=record)
 
 @app.route('/view_data')
+@login_required
 def view_data():
     """View attendance data with QR codes"""
     # Create a mapping of event -> QR code base64
@@ -84,19 +129,13 @@ def view_data():
     return render_template('data.html', records=attendance_data, qr_codes=event_qr_map)
 
 @app.route('/api/attendance', methods=['GET'])
+@login_required
 def get_attendance_data():
     """API endpoint to get data as JSON"""
     return jsonify(attendance_data)
 
-
-# Add these imports to the top of your Flask app
-from flask import send_file
-import pandas as pd
-import io
-from datetime import datetime
-
-# Add this new route to your Flask app
 @app.route('/export_to_excel', methods=['POST'])
+@login_required
 def export_to_excel():
     """Export data to Excel file"""
     try:
@@ -162,4 +201,4 @@ def export_to_excel():
         return jsonify({'error': f'Export failed: {str(error)}'}), 500
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5001) 
+    app.run(debug=True, host='0.0.0.0', port=5001)
