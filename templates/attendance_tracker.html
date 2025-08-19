@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance Tracker</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #b93237 0%, #7c393b 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .user-info {
+            color: white;
+            font-size: 14px;
+        }
+        
+        .logout-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 8px 16px;
+            font-size: 14px;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: background-color 0.3s ease;
+        }
+        
+        .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: #4a5568;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5rem;
+            font-weight: 300;
+        }
+
+        .tracker-controls {
+            background: #f7fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr auto;
+            gap: 20px;
+            align-items: end;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 8px;
+        }
+
+        .form-group select,
+        .form-group input {
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+
+        .form-group select:focus,
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #b93237 0%, #7c393b 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: transform 0.2s ease;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #718096;
+        }
+
+        .btn-success {
+            background: #10b981;
+        }
+
+        .matrix-container {
+            display: none;
+            margin-top: 30px;
+        }
+
+        .matrix-container.active {
+            display: block;
+        }
+
+        .matrix-info {
+            background: #e6fffa;
+            border: 1px solid #81e6d9;
+            border-radius: 4px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .matrix-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        th, td {
+            padding: 8px;
+            text-align: center;
+            border: 1px solid #e2e8f0;
+            font-size: 14px;
+        }
+
+        th {
+            background: #4472C4;
+            color: white;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+        }
+
+        .student-name-col {
+            text-align: left;
+            min-width: 150px;
+            background: #f8fafc;
+        }
+
+        .student-id-col {
+            text-align: left;
+            min-width: 100px;
+            background: #f8fafc;
+        }
+
+        .total-col {
+            background: #fef5e7;
+            font-weight: bold;
+            color: #d69e2e;
+            min-width: 60px;
+        }
+
+        .date-col {
+            min-width: 80px;
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+        }
+
+        .attendance-mark {
+            font-weight: bold;
+            color: #38a169;
+        }
+
+        .navigation-links {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #718096;
+        }
+
+        .error-message {
+            background: #fed7d7;
+            border: 1px solid #feb2b2;
+            color: #c53030;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            
+            .matrix-controls {
+                flex-direction: column;
+                gap: 15px;
+                align-items: stretch;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="user-info">
+            {% if session.username %}
+                Welcome, {{ session.username }}!
+            {% endif %}
+        </div>
+        <a href="/logout" class="logout-btn">Logout</a>
+    </div>
+
+    <div class="container">
+        <h1>Attendance Tracker</h1>
+
+        <div class="navigation-links">
+            <a href="/" class="btn btn-secondary">Back to Home</a>
+            <a href="/view_data" class="btn btn-secondary">View All Data</a>
+            <a href="/manage_students" class="btn btn-secondary">Manage Students</a>
+        </div>
+
+        <div class="tracker-controls">
+            <h3 style="margin-top: 0; color: #2d3748;">Generate Attendance Matrix</h3>
+            <p style="color: #718096; margin-bottom: 20px;">
+                Create a semester-long attendance spreadsheet with students as rows and dates as columns. 
+                Perfect for tracking dance class attendance over time.
+            </p>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="eventSelect">Select Event/Class:</label>
+                    <select id="eventSelect" required>
+                        <option value="">Choose an event...</option>
+                        {% for event in events %}
+                        <option value="{{ event }}">{{ event }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="startDate">Start Date:</label>
+                    <input type="date" id="startDate" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="endDate">End Date:</label>
+                    <input type="date" id="endDate" required>
+                </div>
+                
+                <div class="form-group">
+                    <button onclick="generateMatrix()" class="btn">Generate Matrix</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="loadingMessage" class="loading" style="display: none;">
+            Generating attendance matrix...
+        </div>
+
+        <div id="errorMessage" class="error-message" style="display: none;"></div>
+
+        <div id="matrixContainer" class="matrix-container">
+            <div class="matrix-info">
+                <h4 style="margin: 0 0 10px 0; color: #2d3748;">Matrix Generated Successfully!</h4>
+                <p id="matrixSummary" style="margin: 0; color: #4a5568;"></p>
+            </div>
+
+            <div class="matrix-controls">
+                <div>
+                    <strong id="matrixTitle"></strong>
+                </div>
+                <div>
+                    <button onclick="exportMatrix()" class="btn btn-success">Export to Excel</button>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table id="matrixTable">
+                    <thead id="matrixHeader">
+                        <!-- Will be populated by JavaScript -->
+                    </thead>
+                    <tbody id="matrixBody">
+                        <!-- Will be populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Set default dates (current semester)
+        document.addEventListener('DOMContentLoaded', function() {
+            const today = new Date();
+            const currentYear = today.getFullYear();
+            const currentMonth = today.getMonth();
+            
+            // Determine semester dates
+            let startDate, endDate;
+            if (currentMonth >= 0 && currentMonth <= 4) { // Spring semester
+                startDate = new Date(currentYear, 0, 15); // Jan 15
+                endDate = new Date(currentYear, 4, 15); // May 15
+            } else if (currentMonth >= 8 && currentMonth <= 11) { // Fall semester
+                startDate = new Date(currentYear, 7, 15); // Aug 15
+                endDate = new Date(currentYear, 11, 15); // Dec 15
+            } else { // Summer or default
+                startDate = new Date(currentYear, 5, 1); // June 1
+                endDate = new Date(currentYear, 7, 31); // Aug 31
+            }
+            
+            document.getElementById('startDate').valueAsDate = startDate;
+            document.getElementById('endDate').valueAsDate = endDate;
+        });
+
+        let currentMatrixData = null;
+        let currentMatrixDates = [];
+        let currentEventName = '';
+
+        function generateMatrix() {
+            const eventName = document.getElementById('eventSelect').value;
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+
+            if (!eventName || !startDate || !endDate) {
+                showError('Please fill in all fields');
+                return;
+            }
+
+            if (new Date(startDate) >= new Date(endDate)) {
+                showError('Start date must be before end date');
+                return;
+            }
+
+            // Show loading
+            document.getElementById('loadingMessage').style.display = 'block';
+            document.getElementById('errorMessage').style.display = 'none';
+            document.getElementById('matrixContainer').classList.remove('active');
+
+            // Send request to Flask backend
+            fetch('/generate_attendance_matrix', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    event_name: eventName,
+                    start_date: startDate,
+                    end_date: endDate
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('loadingMessage').style.display = 'none';
+                
+                if (data.success) {
+                    currentMatrixData = data.data;
+                    currentMatrixDates = data.dates;
+                    currentEventName = data.event_name;
+                    
+                    displayMatrix(data.data, data.dates, data.event_name);
+                    document.getElementById('matrixContainer').classList.add('active');
+                } else {
+                    showError(data.error || 'Failed to generate matrix');
+                }
+            })
+            .catch(error => {
+                document.getElementById('loadingMessage').style.display = 'none';
+                showError('Network error: ' + error.message);
+                console.error('Error:', error);
+            });
+        }
+
+        function displayMatrix(matrixData, dates, eventName) {
+            // Update title and summary
+            document.getElementById('matrixTitle').textContent = `${eventName} - Attendance Matrix`;
+            
+            const totalStudents = matrixData.length;
+            const totalDates = dates.length;
+            const totalAttendances = matrixData.reduce((sum, student) => sum + student.total, 0);
+            
+            document.getElementById('matrixSummary').textContent = 
+                `${totalStudents} students, ${totalDates} days tracked, ${totalAttendances} total attendances`;
+
+            // Build table header
+            const header = document.getElementById('matrixHeader');
+            header.innerHTML = '';
+            
+            const headerRow = document.createElement('tr');
+            headerRow.innerHTML = `
+                <th class="student-name-col">Student Name</th>
+                <th class="student-id-col">Student ID</th>
+                <th class="total-col">Total</th>
+            `;
+            
+            // Add date columns
+            dates.forEach(date => {
+                const th = document.createElement('th');
+                th.className = 'date-col';
+                th.textContent = formatDateHeader(date);
+                th.title = date; // Tooltip with full date
+                headerRow.appendChild(th);
+            });
+            
+            header.appendChild(headerRow);
+
+            // Build table body
+            const tbody = document.getElementById('matrixBody');
+            tbody.innerHTML = '';
+            
+            matrixData.forEach(student => {
+                const row = document.createElement('tr');
+                
+                // Student info columns
+                row.innerHTML = `
+                    <td class="student-name-col">${student.name}</td>
+                    <td class="student-id-col">${student.student_id || ''}</td>
+                    <td class="total-col">${student.total}</td>
+                `;
+                
+                // Add attendance marks for each date
+                dates.forEach(date => {
+                    const td = document.createElement('td');
+                    const mark = student[date] || '';
+                    td.textContent = mark;
+                    if (mark === 'X') {
+                        td.className = 'attendance-mark';
+                    }
+                    row.appendChild(td);
+                });
+                
+                tbody.appendChild(row);
+            });
+        }
+
+        function formatDateHeader(dateStr) {
+            const date = new Date(dateStr);
+            const month = date.getMonth() + 1;
+            const day = date.getDate();
+            return `${month}/${day}`;
+        }
+
+        function exportMatrix() {
+            if (!currentMatrixData || !currentMatrixDates) {
+                showError('No matrix data to export');
+                return;
+            }
+
+            // Show loading state
+            const exportBtn = document.querySelector('button[onclick="exportMatrix()"]');
+            const originalText = exportBtn.textContent;
+            exportBtn.textContent = 'Exporting...';
+            exportBtn.disabled = true;
+
+            fetch('/export_attendance_matrix', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    data: currentMatrixData,
+                    dates: currentMatrixDates,
+                    event_name: currentEventName
+                })
+            })
+            .then(response => {
+                if (response.ok) {
+                    return response.blob();
+                } else {
+                    throw new Error('Export failed');
+                }
+            })
+            .then(blob => {
+                // Create download link
+                const url = window.URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `${currentEventName.replace(/\s+/g, '_')}_attendance_matrix.xlsx`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                window.URL.revokeObjectURL(url);
+                
+                // Reset button
+                exportBtn.textContent = originalText;
+                exportBtn.disabled = false;
+            })
+            .catch(error => {
+                showError('Export failed: ' + error.message);
+                exportBtn.textContent = originalText;
+                exportBtn.disabled = false;
+            });
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            
+            // Hide after 5 seconds
+            setTimeout(() => {
+                errorDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        // Add keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey || e.metaKey) {
+                switch(e.key) {
+                    case 'Enter':
+                        e.preventDefault();
+                        generateMatrix();
+                        break;
+                    case 'e':
+                        if (currentMatrixData) {
+                            e.preventDefault();
+                            exportMatrix();
+                        }
+                        break;
+                }
+            }
+        });
+    </script>
+</body>
+</html>

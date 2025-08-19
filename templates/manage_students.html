@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Students</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #b93237 0%, #7c393b 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .user-info {
+            color: white;
+            font-size: 14px;
+        }
+        
+        .logout-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 8px 16px;
+            font-size: 14px;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: background-color 0.3s ease;
+        }
+        
+        .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: #4a5568;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5rem;
+            font-weight: 300;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: #f7fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 4px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            color: #718096;
+            font-size: 14px;
+            text-transform: uppercase;
+        }
+
+        .navigation-links {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #b93237 0%, #7c393b 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: transform 0.2s ease;
+            font-weight: 600;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #718096;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .search-box {
+            padding: 10px;
+            border: 2px solid #e2e8f0;
+            border-radius: 4px;
+            font-size: 16px;
+            width: 300px;
+            max-width: 100%;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        th {
+            background: #f7fafc;
+            font-weight: 600;
+            color: #2d3748;
+            position: sticky;
+            top: 0;
+        }
+
+        tr:hover {
+            background: #f7fafc;
+        }
+
+        .dues-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .dues-btn.paid {
+            background: #10b981;
+            color: white;
+        }
+
+        .dues-btn.unpaid {
+            background: #ef4444;
+            color: white;
+        }
+
+        .dues-btn.exempt {
+            background: #6b7280;
+            color: white;
+        }
+
+        .dues-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .attendance-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .attendance-high { background: #c6f6d5; color: #2f855a; }
+        .attendance-medium { background: #fef5e7; color: #d69e2e; }
+        .attendance-low { background: #fed7d7; color: #c53030; }
+
+        .last-attendance {
+            font-size: 14px;
+            color: #718096;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #718096;
+        }
+
+        .success-message {
+            background: #c6f6d5;
+            border: 1px solid #9ae6b4;
+            color: #2f855a;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .search-box {
+                width: 100%;
+            }
+
+            table {
+                font-size: 14px;
+            }
+
+            th, td {
+                padding: 10px 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="user-info">
+            {% if session.username %}
+                Welcome, {{ session.username }}!
+            {% endif %}
+        </div>
+        <a href="/logout" class="logout-btn">Logout</a>
+    </div>
+
+    <div class="container">
+        <h1>Student Management</h1>
+
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-number">{{ students|length }}</div>
+                <div class="stat-label">Total Students</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{ students|selectattr('dues_status', 'equalto', 'paid')|list|length }}</div>
+                <div class="stat-label">Dues Paid</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{ students|selectattr('dues_status', 'equalto', 'unpaid')|list|length }}</div>
+                <div class="stat-label">Dues Unpaid</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{ (students|map(attribute='attendance_count')|sum) or 0 }}</div>
+                <div class="stat-label">Total Attendances</div>
+            </div>
+        </div>
+
+        <div class="navigation-links">
+            <a href="/" class="btn btn-secondary">Back to Home</a>
+            <a href="/view_data" class="btn btn-secondary">View All Data</a>
+            <a href="/attendance_tracker" class="btn btn-secondary">Attendance Tracker</a>
+        </div>
+
+        <div id="successMessage" class="success-message"></div>
+
+        <div class="controls">
+            <input type="text" class="search-box" id="searchBox" placeholder="Search by name or student ID...">
+            <div>
+                <button class="btn" onclick="exportStudents()">Export Student List</button>
+            </div>
+        </div>
+
+        {% if students %}
+        <div class="table-container">
+            <table id="studentsTable">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Student ID</th>
+                        <th>Total Attendances</th>
+                        <th>Last Attendance</th>
+                        <th>Dues Status</th>
+                        <th>Dues Paid Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for student in students %}
+                    <tr>
+                        <td>{{ student.first_name }} {{ student.last_name or '' }}</td>
+                        <td>{{ student.student_id or 'N/A' }}</td>
+                        <td>
+                            <span class="attendance-badge {% if student.attendance_count >= 10 %}attendance-high{% elif student.attendance_count >= 5 %}attendance-medium{% else %}attendance-low{% endif %}">
+                                {{ student.attendance_count or 0 }}
+                            </span>
+                        </td>
+                        <td class="last-attendance">
+                            {% if student.last_attendance %}
+                                {{ student.last_attendance[:10] }}
+                            {% else %}
+                                Never
+                            {% endif %}
+                        </td>
+                        <td>
+                            <button class="dues-btn {{ student.dues_status or 'unpaid' }}" 
+                                    onclick="toggleDuesStatus('{{ student.student_id }}', '{{ student.dues_status or 'unpaid' }}')">
+                                {% if student.dues_status == 'paid' %}
+                                    Paid ✓
+                                {% elif student.dues_status == 'exempt' %}
+                                    Exempt
+                                {% else %}
+                                    Unpaid
+                                {% endif %}
+                            </button>
+                        </td>
+                        <td>
+                            {{ student.dues_paid_date or '-' }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-state-icon">👥</div>
+            <p>No student records yet. Students will appear here after they submit attendance.</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <script>
+        // Store student data for export
+        const studentData = [
+            {% for student in students %}
+            {
+                name: "{{ student.first_name }} {{ student.last_name or '' }}",
+                studentId: "{{ student.student_id or '' }}",
+                attendanceCount: {{ student.attendance_count or 0 }},
+                lastAttendance: "{{ student.last_attendance or '' }}",
+                duesStatus: "{{ student.dues_status or 'unpaid' }}",
+                duesPaidDate: "{{ student.dues_paid_date or '' }}"
+            }{% if not loop.last %},{% endif %}
+            {% endfor %}
+        ];
+
+        // Search functionality
+        const searchBox = document.getElementById('searchBox');
+        if (searchBox) {
+            searchBox.addEventListener('input', function() {
+                const searchValue = this.value.toLowerCase();
+                const rows = document.querySelectorAll('#studentsTable tbody tr');
+                
+                rows.forEach(row => {
+                    const rowText = row.innerText.toLowerCase();
+                    row.style.display = rowText.includes(searchValue) ? '' : 'none';
+                });
+            });
+        }
+
+        function toggleDuesStatus(studentId, currentStatus) {
+            if (!studentId) {
+                showMessage('Student ID is required', 'error');
+                return;
+            }
+
+            // Cycle through statuses: unpaid -> paid -> exempt -> unpaid
+            let newStatus;
+            switch(currentStatus) {
+                case 'unpaid':
+                    newStatus = 'paid';
+                    break;
+                case 'paid':
+                    newStatus = 'exempt';
+                    break;
+                case 'exempt':
+                    newStatus = 'unpaid';
+                    break;
+                default:
+                    newStatus = 'paid';
+            }
+
+            // Send update to server
+            fetch('/update_dues_status', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    student_id: studentId,
+                    dues_status: newStatus
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Reload page to see updates
+                    location.reload();
+                } else {
+                    showMessage('Failed to update dues status', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showMessage('Network error occurred', 'error');
+            });
+        }
+
+        function exportStudents() {
+            // Prepare data for export
+            const exportData = [
+                ['Name', 'Student ID', 'Total Attendances', 'Last Attendance', 'Dues Status', 'Dues Paid Date'],
+                ...studentData.map(student => [
+                    student.name,
+                    student.studentId,
+                    student.attendanceCount,
+                    student.lastAttendance ? student.lastAttendance.split(' ')[0] : '',
+                    student.duesStatus,
+                    student.duesPaidDate
+                ])
+            ];
+
+            // Send to Flask backend for Excel export
+            fetch('/export_to_excel', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    data: exportData,
+                    filename: 'student_list.xlsx'
+                })
+            })
+            .then(response => response.blob())
+            .then(blob => {
+                // Create download link
+                const url = window.URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = 'student_list.xlsx';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                window.URL.revokeObjectURL(url);
+            })
+            .catch(error => {
+                console.error('Export error:', error);
+                showMessage('Export failed. Please try again.', 'error');
+            });
+        }
+
+        function showMessage(message, type = 'success') {
+            const messageDiv = document.getElementById('successMessage');
+            messageDiv.textContent = message;
+            messageDiv.className = type === 'error' ? 'error-message' : 'success-message';
+            messageDiv.style.display = 'block';
+            
+            // Hide after 3 seconds
+            setTimeout(() => {
+                messageDiv.style.display = 'none';
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
