@@ -382,18 +382,18 @@
 
         function getDuesButtonClass(eventCount, studentKey) {
             if (duesStatus[studentKey] === 'paid') return 'green';
-            if (eventCount < 8) return 'grey';
+            if (eventCount < 4) return 'grey';
             return 'red';
         }
 
         function getDuesButtonText(eventCount, studentKey) {
             if (duesStatus[studentKey] === 'paid') return 'Paid ✓';
-            if (eventCount < 8) return `Need ${8 - eventCount} more`;
+            if (eventCount < 4) return `Need ${8 - eventCount} more`;
             return 'Pay Dues';
         }
 
         function toggleDuesStatus(studentKey, eventCount) {
-            if (eventCount < 8) return; // Can't pay if under 8 events
+            if (eventCount < 4) return; // Can't pay if under 8 events
             
             if (duesStatus[studentKey] === 'paid') {
                 duesStatus[studentKey] = 'unpaid';
@@ -415,7 +415,7 @@
                 
                 const duesClass = getDuesButtonClass(student.eventCount, studentKey);
                 const duesText = getDuesButtonText(student.eventCount, studentKey);
-                const clickable = student.eventCount >= 8;
+                const clickable = student.eventCount >= 4;
                 
                 row.innerHTML = `
                     <td>${student.name}</td>
