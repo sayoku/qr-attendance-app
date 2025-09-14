@@ -22,6 +22,8 @@
 from wsgiref.simple_server import make_server
 from pyramid.config import Configurator
 from pyramid.response import Response
+from werkzeug.wsgi import DispatcherMiddleware
+from flask import Flask
 import os
 
 def hello_world(request):
@@ -31,22 +33,33 @@ def hello_world(request):
     message = "Hello, " + name + "!\n"
     return Response(message)
 
-def test_flask_import(request):
-    try:
-        import flask
-        return Response("Flask import successful!\n")
-    except ImportError as e:
-        return Response(f"Flask import failed: {str(e)}\n")
+# Create Flask app
+flask_app = Flask(__name__)
+flask_app.secret_key = 'dancesport_at_osu_secretary_2025_2026'
+
+@flask_app.route('/flask-hello')
+def flask_hello():
+    return "Hello from Flask!"
+
+@flask_app.route('/admin')
+def admin():
+    return "Admin dashboard (placeholder)"
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT"))
+    
+    # Create Pyramid app
     with Configurator() as config:
         config.add_route('hello', '/')
-        config.add_route('flask_test', '/flask-test')
         config.add_view(hello_world, route_name='hello')
-        config.add_view(test_flask_import, route_name='flask_test')
-        app = config.make_wsgi_app()
-    server = make_server('0.0.0.0', port, app)
+        pyramid_app = config.make_wsgi_app()
+    
+    # Combine Pyramid and Flask apps
+    application = DispatcherMiddleware(flask_app, {
+        '/hello': pyramid_app
+    })
+    
+    server = make_server('0.0.0.0', port, application)
     server.serve_forever()
 
 # from wsgiref.simple_server import make_server
