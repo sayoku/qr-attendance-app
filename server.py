@@ -1,5 +1,5 @@
 from werkzeug.middleware.dispatcher import DispatcherMiddleware
-from flask_app import app  # Your Flask app is defined here
+from flask_app import app, init_db  # Your Flask app is defined here
 
 from pyramid.config import Configurator
 from pyramid.response import Response
@@ -8,6 +8,9 @@ import os
 def hello_world(request):
     name = os.environ.get('NAME', 'world')
     return Response(f"Hello, {name}!\n")
+
+# Initialize database on startup
+init_db()
 
 # Create Pyramid app
 with Configurator() as config:

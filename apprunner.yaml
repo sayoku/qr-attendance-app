@@ -7,11 +7,11 @@ build:
       - pip install -r requirements.txt
 run:
   runtime-version: 3.11
-  command: gunicorn --bind 0.0.0.0:8080 server:application
+  command: python server.py
   network:
     port: 8080
   env:
     - name: PORT
       value: "8080"
     - name: NAME
-      value: "world"  
+      value: "world"
