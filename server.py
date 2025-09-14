@@ -33,17 +33,9 @@ import base64
 import sqlite3
 import os
 
-# Pyramid app for hello world
-def hello_world(request):
-    name = os.environ.get('NAME')
-    if name == None or len(name) == 0:
-        name = "world"
-    message = "Hello, " + name + "!\n"
-    return Response(message)
-
 # Flask app for attendance system
-flask_app = Flask(__name__)
-flask_app.secret_key = 'dancesport_at_osu_secretary_2025_2026'
+app = Flask(__name__)
+app.secret_key = 'dancesport_at_osu_secretary_2025_2026'
 
 # Database file path
 DATABASE = 'attendance.db'
@@ -143,7 +135,7 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
-@flask_app.route('/login', methods=['GET', 'POST'])
+@app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
         username = request.form.get('username')
@@ -159,18 +151,18 @@ def login():
     
     return render_template('login.html')
 
-@flask_app.route('/logout')
+@app.route('/logout')
 def logout():
     session.clear()
     flash('You have been logged out.')
     return redirect(url_for('login'))
 
-@flask_app.route('/admin')
+@app.route('/admin')
 @login_required
 def home():
     return render_template('admin.html')
 
-@flask_app.route('/generate_qr', methods=['POST'])
+@app.route('/generate_qr', methods=['POST'])
 @login_required
 def generate_qr():
     """Generate QR code for a specific event"""
@@ -211,13 +203,13 @@ def generate_qr():
 
     return render_template('qr_display.html', qr_image=qr_image, event_name=event_name, form_url=form_url)
 
-@flask_app.route('/form')
+@app.route('/form')
 def attendance_form():
     """Show attendance form after scanning QR (no login required)"""
     event = request.args.get('event', '')
     return render_template('form.html', event=event)
 
-@flask_app.route('/submit', methods=['POST'])
+@app.route('/submit', methods=['POST'])
 def submit():
     """Handle attendance form submission (no login required)"""
     first_name = request.form.get('first_name')
@@ -253,7 +245,7 @@ def submit():
     
     return render_template('success.html', record=record)
 
-@flask_app.route('/view_data')
+@app.route('/view_data')
 @login_required
 def view_data():
     """View attendance data with QR codes"""
@@ -276,7 +268,7 @@ def view_data():
     
     return render_template('data.html', records=records, qr_codes=qr_codes)
 
-@flask_app.route('/attendance_tracker')
+@app.route('/attendance_tracker')
 @login_required
 def attendance_tracker():
     """New attendance tracking view"""
@@ -298,7 +290,7 @@ def attendance_tracker():
     
     return render_template('attendance_tracker.html', records=records, events=events)
 
-@flask_app.route('/generate_attendance_matrix', methods=['POST'])
+@app.route('/generate_attendance_matrix', methods=['POST'])
 @login_required
 def generate_attendance_matrix():
     """Generate attendance matrix for a specific event/class"""
@@ -383,7 +375,7 @@ def generate_attendance_matrix():
         print(f'Matrix generation error: {error}')
         return jsonify({'error': str(error)}), 500
 
-@flask_app.route('/export_attendance_matrix', methods=['POST'])
+@app.route('/export_attendance_matrix', methods=['POST'])
 @login_required
 def export_attendance_matrix():
     """Export attendance matrix to Excel"""
@@ -467,7 +459,7 @@ def export_attendance_matrix():
         print(f'Excel export error: {error}')
         return jsonify({'error': f'Export failed: {str(error)}'}), 500
 
-@flask_app.route('/api/attendance', methods=['GET'])
+@app.route('/api/attendance', methods=['GET'])
 @login_required
 def get_attendance_data():
     """API endpoint to get data as JSON"""
@@ -480,7 +472,7 @@ def get_attendance_data():
     
     return jsonify(records)
 
-@flask_app.route('/export_to_excel', methods=['POST'])
+@app.route('/export_to_excel', methods=['POST'])
 @login_required
 def export_to_excel():
     """Export data to Excel file (legacy function for compatibility)"""
@@ -545,7 +537,7 @@ def export_to_excel():
         return jsonify({'error': f'Export failed: {str(error)}'}), 500
 
 # Database management routes
-@flask_app.route('/manage_students')
+@app.route('/manage_students')
 @login_required
 def manage_students():
     """Student management page"""
@@ -566,7 +558,7 @@ def manage_students():
     
     return render_template('manage_students.html', students=students)
 
-@flask_app.route('/update_dues_status', methods=['POST'])
+@app.route('/update_dues_status', methods=['POST'])
 @login_required
 def update_dues_status():
     """Update student dues status"""
@@ -608,7 +600,7 @@ if __name__ == '__main__':
     
     # Combine Pyramid and Flask apps using DispatcherMiddleware
     # Flask app will handle all routes except '/' which goes to Pyramid
-    application = DispatcherMiddleware(flask_app, {
+    application = DispatcherMiddleware(app, {
         '/hello': pyramid_app
     })
     
