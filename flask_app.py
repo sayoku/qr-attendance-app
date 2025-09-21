@@ -12,7 +12,14 @@ app = Flask(__name__)
 app.secret_key = 'dancesport_at_osu_secretary_2025_2026'
 
 # Database file path
-DATABASE = 'attendance.db'
+DATABASE = os.path.join(os.path.dirname(__file__), 'attendance.db')
+
+# In AWS environments, you might want to use /tmp for write operations
+if os.environ.get('AWS_EXECUTION_ENV'):
+    DATABASE = '/tmp/attendance.db'
+
+# Update the secret key to use environment variable for production
+app.secret_key = os.environ.get('SECRET_KEY', 'dancesport_at_osu_secretary_2025_2026')
 
 # Admin credentials (in production, store these in the database with hashed passwords)
 ADMIN_CREDENTIALS = {
@@ -93,6 +100,12 @@ def init_db():
     
     conn.commit()
     conn.close()
+
+
+# At the end of flask_app.py, ensure the database is initialized:
+if not os.path.exists(DATABASE):
+    init_db()
+
 
 def get_db_connection():
     """Get database connection with row factory"""

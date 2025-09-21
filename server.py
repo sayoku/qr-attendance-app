@@ -1,24 +1,15 @@
-from werkzeug.middleware.dispatcher import DispatcherMiddleware
-from flask_app import app, init_db  # Your Flask app is defined here
-
-from pyramid.config import Configurator
-from pyramid.response import Response
 import os
-
-def hello_world(request):
-    name = os.environ.get('NAME', 'world')
-    return Response(f"Hello, {name}!\n")
+from flask_app import app, init_db
 
 # Initialize database on startup
 init_db()
 
-# Create Pyramid app
-with Configurator() as config:
-    config.add_route('hello', '/')
-    config.add_view(hello_world, route_name='hello')
-    pyramid_app = config.make_wsgi_app()
+# AWS App Runner expects the WSGI application to be named 'application'
+application = app
 
-# Combine Pyramid and Flask apps
-application = DispatcherMiddleware(app, {
-    '/hello': pyramid_app
-})
+if __name__ == '__main__':
+    # Get port from environment variable (AWS App Runner sets this)
+    port = int(os.environ.get('PORT', 8080))
+    
+    # Run the Flask app
+    app.run(host='0.0.0.0', port=port, debug=False)

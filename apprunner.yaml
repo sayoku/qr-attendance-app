@@ -4,14 +4,15 @@ build:
   commands:
     build:
       - echo "Installing dependencies"
+      - pip install --upgrade pip
       - pip install -r requirements.txt
 run:
   runtime-version: 3.11
-  command: python server.py
+  command: gunicorn --bind 0.0.0.0:8080 --workers 4 server:application
   network:
     port: 8080
   env:
     - name: PORT
       value: "8080"
-    - name: NAME
-      value: "world"
+    - name: FLASK_ENV
+      value: "production"
