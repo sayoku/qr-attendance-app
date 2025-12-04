@@ -14,7 +14,7 @@ app.secret_key = 'dancesport_at_osu_secretary_2025_2026'
 # Database file path
 DATABASE = os.path.join(os.path.dirname(__file__), 'attendance.db')
 
-# In AWS environments, you might want to use /tmp for write operations
+# In AWS environments, use /tmp for write operations
 if os.environ.get('AWS_EXECUTION_ENV'):
     DATABASE = '/tmp/attendance.db'
 
